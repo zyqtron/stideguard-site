@@ -1,453 +1,743 @@
-<!DOCTYPE html><html lang="fr"><head><!-- 🥷 Zyqtron Propulsé par Hermes Agent v2.1 - Architecture Swarm Active --><!-- Loi de Zyqtron #1: Transparence Totale sur les Modèles IA --><!-- Ce code est maintenu par le Bâtisseur Zyqtron - Écosystème d'Automatisation --><!-- IA UTILISÉE : qwen/qwen3-coder:free & tencent/hy3-preview:free VIA OpenRouter --><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>StideGuard 🥷 | Infrastructure Webhook Robuste — Zyqtron</title><!-- Meta Description SEO --><meta name="description" content="StideGuard : gérez vos webhooks avec retry automatique, DLQ persistante, monitoring temps réel. Propulsé par Zyqtron."><meta property="og:title" content="StideGuard — Infrastructure Webhook Robuste"><meta property="og:description" content="Retry intelligent, DLQ, monitoring. Déployez votre infrastructure webhook en 30 secondes."><meta property="og:type" content="website"><meta property="og:url" content="https://stideguard.zyqtron.io"><meta name="twitter:card" content="summary_large_image"><!-- Tailwind CSS CDN --><script src="https://cdn.tailwindcss.com"></script><script>
-tailwind.config = {
-darkMode: 'class',
-theme: {
-extend: {
-colors: {
-primary: '#8B5CF6',
-primaryDark: '#7C3AED',
-primaryLight: '#A78BFA',
-secondary: '#10B981',
-dark: '#0F172A',
-darker: '#020617',
-accent: '#EC4899'
-},
-animation: {
-'glow': 'glow 2s ease-in-out infinite',
-'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-'slide-up': 'slideUp 0.6s ease-out forwards',
-'fade-in': 'fadeIn 0.5s ease-out forwards',
-'ninja-enter': 'ninjaEnter 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards',
-},
-keyframes: {
-glow: {
-'0%, 100%': { boxShadow: '0 0 20px rgba(139, 92, 246, 0.5)' },
-'50%': { boxShadow: '0 0 40px rgba(139, 92, 246, 0.8)' },
-},
-slideUp: {
-'0%': { opacity: '0', transform: 'translateY(40px)' },
-'100%': { opacity: '1', transform: 'translateY(0)' },
-},
-fadeIn: {
-'0%': { opacity: '0' },
-'100%': { opacity: '1' },
-},
-ninjaEnter: {
-'0%': { opacity: '0', transform: 'scale(0.3) rotate(-10deg)' },
-'50%': { transform: 'scale(1.1)' },
-'100%': { opacity: '1', transform: 'scale(1) rotate(0deg)' },
-}
-}
-}
-}
-}
-</script><style>
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: #0F172A; }
-::-webkit-scrollbar-thumb { background: #8B5CF6; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #7C3AED; }
-
-.dark-mode-toggle { transition: all 0.3s ease; }
-
-.gradient-text {
-background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
--webkit-background-clip: text;
--webkit-text-fill-color: transparent;
-background-clip: text;
-}
-
-.fade-in-section { opacity: 0; transform: translateY(40px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
-.fade-in-section.is-visible { opacity: 1; transform: translateY(0); }
-
-.api-key-hidden { opacity: 0; transform: scale(0.8); }
-.api-key-visible { opacity: 1; transform: scale(1); }
-
-.cursor-blink { display: inline-block; width: 2px; height: 18px; background: #10B981; animation: blink 1s step-end infinite; vertical-align: middle; }
-@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
-
-.progress-fill { transition: width 1s ease-out; }
-
-html { scroll-behavior: smooth; }
-
-[contenteditable]:focus { outline: none; }
-</style></head><body class="bg-darker text-gray-100 min-h-screen font-sans"><!-- Notification Toast --><div id="toast" class="fixed top-4 right-4 z-[100] transform translate-x-full transition-transform duration-300"><div class="bg-gray-800 border border-primary px-6 py-3 rounded-lg shadow-2xl flex items-center gap-3"><span id="toastIcon" class="text-2xl">✓</span><span id="toastMessage" class="text-sm"></span></div></div><!-- Navigation --><header class="fixed top-0 left-0 right-0 z-50 bg-darker/95 backdrop-blur-md border-b border-gray-800"><nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Navigation principale"><div class="flex items-center justify-between h-16"><a href="#" class="flex items-center gap-2 group"><span class="text-3xl group-hover:animate-pulse">🥷</span><span class="text-xl font-bold gradient-text">Zyqtron</span><span class="text-xs bg-primary px-2 py-0.5 rounded-full ml-1">StideGuard</span></a><div class="hidden md:flex items-center gap-8"><a href="#features" class="text-gray-300 hover:text-primary transition-colors text-sm">Fonctionnalités</a><a href="#demo" class="text-gray-300 hover:text-primary transition-colors text-sm">Démo</a><a href="#sandbox" class="text-gray-300 hover:text-primary transition-colors text-sm">SandBox</a><a href="#roi" class="text-gray-300 hover:text-primary transition-colors text-sm">ROI</a><a href="#pricingTitle" class="text-gray-300 hover:text-primary transition-colors text-sm">Tarifs</a><button id="dashboardBtn" onclick="window.open('https://zyqtron.fr/catalogue.html','_blank')" class="bg-primary hover:bg-primaryDark text-white px-5 py-2 rounded-lg transition-all text-sm font-semibold">📊 Dashboard</button><button id="navBtn" class="bg-gradient-to-r from-primary to-pink-500 hover:from-primaryDark hover:to-pink-600 text-white px-6 py-2 rounded-lg transition-all text-sm font-bold shadow-lg shadow-primary/50">Commencer</button></div><button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg hover:bg-gray-800 transition-colors" aria-label="Menu mobile" aria-expanded="false"><svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></button></div><!-- Mobile Menu --><div id="mobileMenu" class="hidden md:hidden pb-4"><a href="#features" class="block py-2 text-gray-300 hover:text-primary transition-colors text-sm">Fonctionnalités</a><a href="#demo" class="block py-2 text-gray-300 hover:text-primary transition-colors text-sm">Démo</a><a href="#sandbox" class="block py-2 text-gray-300 hover:text-primary transition-colors text-sm">SandBox</a><a href="#roi" class="block py-2 text-gray-300 hover:text-primary transition-colors text-sm">ROI</a><a href="#pricingTitle" class="block py-2 text-gray-300 hover:text-primary transition-colors text-sm">Tarifs</a><button id="mobileDashboardBtn" class="block mt-2 w-full bg-primary hover:bg-primaryDark text-white px-5 py-2 rounded-lg transition-all text-sm font-bold">📊 Dashboard</button><button id="mobileNavBtn" class="block mt-2 w-full bg-gradient-to-r from-primary to-pink-500 hover:from-primaryDark hover:to-pink-600 text-white px-6 py-2 rounded-lg transition-all text-sm font-bold">Commencer</button></div></nav></header><main><!-- Hero Section --><section class="pt-32 pb-20 px-4 sm:px-6 lg:px-8" aria-labelledby="heroTitle"><div class="max-w-7xl mx-auto text-center"><div class="inline-flex items-center gap-2 bg-gray-800/50 backdrop-blur border border-gray-700 px-4 py-2 rounded-full animate-slide-up mb-8" style="animation-delay: 0.1s;"><span class="bg-gradient-to-r from-primary to-pink-500 text-xs font-bold px-2 py-0.5 rounded text-white">NOUVEAU</span><span class="text-sm text-gray-300">Interface Dashboard 2.0 disponible ! 🚀</span></div><h1 id="heroTitle" class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 animate-slide-up" style="animation-delay: 0.2s;">
-Detection Intrusion<br><span class="gradient-text">Industrielle SCADA</span></h1><p class="text-xl text-gray-400 mb-8 max-w-3xl mx-auto animate-slide-up" style="animation-delay: 0.3s;">
-Zyqtron vous permet d'surveiller vos infrastructures industrielles (Modbus, DNP3) contre les cyberattaques en quelques secondes.
-Idéal pour les ingenieurs OT, responsables securite industrielle.
-</p><div class="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up" style="animation-delay: 0.4s;"><a href="#cta" id="heroCommencer" class="bg-gradient-to-r from-primary to-pink-500 hover:from-primaryDark hover:to-pink-600 text-white text-lg px-8 py-4 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/50 font-semibold">
-🔥 Essayer Gratuitement
-</a><a href="#demo" class="bg-gray-800 hover:bg-gray-700 hover:border-primary text-white text-lg px-8 py-4 rounded-lg transition-all duration-300 hover:scale-105 border border-gray-700">
-🎬 Voir la Démo
-</a></div><!-- Stats --><div class="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 animate-slide-up" style="animation-delay: 0.5s;"><div class="text-center"><div class="text-3xl font-bold gradient-text">50ms</div><div class="text-gray-400 text-sm">Detection</div></div><div class="text-center"><div class="text-3xl font-bold gradient-text">99.7%</div><div class="text-gray-400 text-sm">Precision</div></div><div class="text-center"><div class="text-3xl font-bold gradient-text">Modbus</div><div class="text-gray-400 text-sm">Protocole</div></div><div class="text-center"><div class="text-3xl font-bold gradient-text">24/7</div><div class="text-gray-400 text-sm">Monitoring</div></div></div></div></section><!-- Features Section --><section id="features" class="py-20 px-4 sm:px-6 lg:px-8 bg-gray-900/50" aria-labelledby="featuresTitle"><div class="max-w-7xl mx-auto"><div class="text-center mb-16 fade-in-section"><h2 id="featuresTitle" class="text-3xl sm:text-4xl font-bold mb-4">
-Pourquoi choisir <span class="gradient-text">StideGuard</span> ?
-</h2><p class="text-gray-400 text-lg">Des fonctionnalités puissantes pour simplifier votre intégration</p></div><div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8"><div class="fade-in-section bg-gray-900 rounded-xl p-8 border border-gray-800 hover:border-primary transition-all duration-300 hover:scale-105 group"><div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary/30 transition-colors"><span class="text-3xl">⚡</span></div><h3 class="text-xl font-semibold mb-3">Detection SCADA</h3><p class="text-gray-400">Analyse en temps reel des protocoles Modbus et DNP3. Algorithme Stide optimise.</p></div><div class="fade-in-section bg-gray-900 rounded-xl p-8 border border-gray-800 hover:border-primary transition-all duration-300 hover:scale-105 group"><div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary/30 transition-colors"><span class="text-3xl">🔒</span></div><h3 class="text-xl font-semibold mb-3">Faux positifs <0.3%</h3><p class="text-gray-400">Modele entraine sur donnees reelles. 4 figures de benchmark.</p></div><div class="fade-in-section bg-gray-900 rounded-xl p-8 border border-gray-800 hover:border-primary transition-all duration-300 hover:scale-105 group"><div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary/30 transition-colors"><span class="text-3xl">🎯</span></div><h3 class="text-xl font-semibold mb-3">Zero Trust OT</h3><p class="text-gray-400">Isolation du trafic critique. Alertes configurables par seuil.</p></div><div class="fade-in-section bg-gray-900 rounded-xl p-8 border border-gray-800 hover:border-primary transition-all duration-300 hover:scale-105 group"><div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary/30 transition-colors"><span class="text-3xl">💾</span></div><h3 class="text-xl font-semibold mb-3">MITRE ATT&CK</h3><p class="text-gray-400">Mapping complet des menaces ICS. Rapports conformes NIST.</p></div><div class="fade-in-section bg-gray-900 rounded-xl p-8 border border-gray-800 hover:border-primary transition-all duration-300 hover:scale-105 group"><div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary/30 transition-colors"><span class="text-3xl">📝</span></div><h3 class="text-xl font-semibold mb-3">API REST</h3><p class="text-gray-400">Integration avec vos SIEM existants. Webhook natif.</p></div><div class="fade-in-section bg-gray-900 rounded-xl p-8 border border-gray-800 hover:border-primary transition-all duration-300 hover:scale-105 group"><div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary/30 transition-colors"><span class="text-3xl">🔑</span></div><h3 class="text-xl font-semibold mb-3">Dashboard OT</h3><p class="text-gray-400">Interface temps reel. Courbes ROC, matrices de confusion.</p></div></div></div></section><!-- Interactive Demo Section --><section id="demo" class="py-20 px-4 sm:px-6 lg:px-8" aria-labelledby="demoTitle"><div class="max-w-6xl mx-auto"><div class="text-center mb-12 fade-in-section"><h2 id="demoTitle" class="text-3xl sm:text-4xl font-bold mb-4">
-<!-- THKL Section --><section class="py-20 px-4 sm:px-6 lg:px-8" aria-labelledby="thklTitle"><div class="max-w-7xl mx-auto"><div class="text-center mb-12 fade-in-section"><h2 id="thklTitle" class="text-3xl sm:text-4xl font-bold mb-4">Propulse par <span class="gradient-text">Zyqtron THKL</span></h2><p class="text-gray-400 text-lg">Savoir-faire issu du THKL-6A80B8. Score 87/100. 529 preuves blockchain Zyqtron.</p></div><div class="grid md:grid-cols-3 gap-8"><div class="fade-in-section bg-gray-900 rounded-xl p-8 border border-gray-800 hover:border-primary transition-all duration-300 hover:scale-105 group"><div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary/30 transition-colors"><span class="text-3xl">&#x1F512;</span></div><h3 class="text-xl font-semibold mb-3">Securite renforcee</h3><p class="text-gray-400">Authentification PBKDF2-SHA256, 52 bits entropie, blocage apres 20 tentatives. Algorithme issu du THKL-52BC74.</p></div><div class="fade-in-section bg-gray-900 rounded-xl p-8 border border-gray-800 hover:border-primary transition-all duration-300 hover:scale-105 group"><div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary/30 transition-colors"><span class="text-3xl">&#x26D3;</span></div><h3 class="text-xl font-semibold mb-3">Preuves Blockchain</h3><p class="text-gray-400">529 horodatages OpenTimestamps verifiables. Chaque livraison peut etre certifiee sur la blockchain Bitcoin pour une tracabilite anti-fraude.</p></div><div class="fade-in-section bg-gray-900 rounded-xl p-8 border border-gray-800 hover:border-primary transition-all duration-300 hover:scale-105 group"><div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary/30 transition-colors"><span class="text-3xl">&#x1F9E0;</span></div><h3 class="text-xl font-semibold mb-3">IA de detection</h3><p class="text-gray-400">Algorithmes de detection d'intrusion (Stide SCADA) et d'anomalies (VM Malware) adaptes aux patterns de webhooks pour identifier les comportements suspects.</p></div></div></div></section>Testez en <span class="gradient-text">30 secondes</span></h2><p class="text-gray-400 text-lg">Un webhook envoyé, une réponse reçue. Simple et efficace.</p></div><div class="max-w-3xl mx-auto"><div class="bg-gray-950 rounded-xl overflow-hidden shadow-2xl border border-gray-800 animate-slide-up"><div class="bg-gray-900 px-4 py-3 flex items-center justify-between"><div class="flex gap-2"><div class="w-3 h-3 rounded-full bg-red-500"></div><div class="w-3 h-3 rounded-full bg-yellow-500"></div><div class="w-3 h-3 rounded-full bg-green-500"></div></div><span class="text-gray-400 text-sm font-mono">Terminal StideGuard</span><div id="successIndicator" class="hidden"><span class="text-green-400 text-sm">✓ Envoyé</span></div></div><div class="p-6 font-mono text-sm min-h-[300px]"><div id="terminalOutput" class="text-gray-300 whitespace-pre-wrap"><span class="text-gray-500"># Terminal互动 de démo</span><span class="text-gray-500"># Cliquez sur "Envoyer Test" pour envoyer un webhook</span><span class="text-gray-500">#</span></div><span id="cursor" class="cursor-blink"></span></div><div class="bg-gray-900/50 border-t border-gray-800 p-4"><div class="flex flex-col sm:flex-row gap-4 items-center"><button id="sendTestBtn" class="bg-gradient-to-r from-secondary to-emerald-500 hover:from-emerald-500 hover:to-emerald-600 text-white px-8 py-3 rounded-lg transition-all duration-300 hover:scale-105 font-semibold flex items-center gap-2 flex-1 justify-center"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-Envoyer Test
-</button><button id="clearTerminalBtn" class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-3 rounded-lg transition-all text-sm flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-Effacer
-</button></div></div></div></div></div></section><!-- Sandbox Live Section --><section id="sandbox" class="py-20 px-4 sm:px-6 lg:px-8 bg-gray-900/50" aria-labelledby="sandboxTitle"><div class="max-w-6xl mx-auto"><div class="text-center mb-12 fade-in-section"><h2 id="sandboxTitle" class="text-3xl sm:text-4xl font-bold mb-4">
-SandBox <span class="gradient-text">Live</span></h2><p class="text-gray-400 text-lg">Éditez et envoyez votre propre payload JSON en temps réel</p></div><div class="max-w-4xl mx-auto"><div class="bg-gray-950 rounded-xl overflow-hidden shadow-2xl border border-gray-800 animate-slide-up"><div class="bg-gray-900 px-4 py-3 flex items-center justify-between"><div class="flex gap-2"><div class="w-3 h-3 rounded-full bg-red-500"></div><div class="w-3 h-3 rounded-full bg-yellow-500"></div><div class="w-3 h-3 rounded-full bg-green-500"></div></div><span class="text-gray-400 text-sm font-mono">Payload Editor</span></div><div class="p-0"><textarea id="payloadEditor" class="w-full h-64 bg-gray-950 text-green-400 font-mono text-sm p-6 focus:outline-none resize-none border-b border-gray-800" spellcheck="false">{
-"event": "THKL-52BC74",
-"user": {
-"id": 1295,
-"email": "test@example.com",
-"name": "John Doe"
-},
-"timestamp": "2024-01-15T10:30:00Z",
-"metadata": {
-"source": "webhook-ninja",
-"version": "2.0"
-}
-}</textarea></div><div class="bg-gray-900/50 border-t border-gray-800 p-4"><div class="flex flex-col sm:flex-row gap-4 items-center"><button id="executeSandboxBtn" class="bg-gradient-to-r from-accent to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white px-8 py-3 rounded-lg transition-all duration-300 hover:scale-105 font-semibold flex items-center gap-2 flex-1 justify-center"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-Exécuter
-</button><button id="beautifyBtn" class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-3 rounded-lg transition-all text-sm flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
-Formatter
-</button><button id="clearSandboxBtn" class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-3 rounded-lg transition-all text-sm flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-Effacer
-</button></div><div id="sandboxResult" class="hidden mt-4 bg-gray-900 rounded-lg p-4 font-mono text-sm"><div class="text-gray-400 mb-2">Réponse du serveur :</div><pre id="sandboxResponse" class="text-green-400"></pre></div></div></div></div></div></section><!-- ROI Calculator Section --><section id="roi" class="py-20 px-4 sm:px-6 lg:px-8" aria-labelledby="roiTitle"><div class="max-w-6xl mx-auto"><div class="text-center mb-12 fade-in-section"><h2 id="roiTitle" class="text-3xl sm:text-4xl font-bold mb-4">
-Calculez votre <span class="gradient-text">ROI Mensuel</span></h2><p class="text-gray-400 text-lg">Estimez vos économies avec StideGuard Pro</p></div><div class="max-w-4xl mx-auto bg-gray-900 rounded-2xl p-8 border border-gray-800 shadow-xl animate-slide-up"><div class="grid md:grid-cols-2 gap-8"><!-- Sliders --><div><h3 class="text-lg font-semibold mb-6 flex items-center gap-2"><span class="text-primary">📊</span>
-Vos Paramètres
-</h3><div class="space-y-6"><div><label for="hourlyCost" class="block text-sm font-medium text-gray-300 mb-2">
-Coût horaire (€/heure)
-</label><input type="range" id="hourlyCostRange" class="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-primary" min="10" max="200" value="50"><div class="flex justify-between text-sm mt-2"><span class="text-gray-500">10€</span><span id="hourlyCostDisplay" class="text-primary font-bold text-lg">50€</span><span class="text-gray-500">200€</span></div></div><div><label for="hoursSavedRange" class="block text-sm font-medium text-gray-300 mb-2">
-Heures sauvées/semaine
-</label><input type="range" id="hoursSavedRange" class="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-primary" min="1" max="40" value="8"><div class="flex justify-between text-sm mt-2"><span class="text-gray-500">1h</span><span id="hoursSavedDisplay" class="text-primary font-bold text-lg">8h</span><span class="text-gray-500">40h</span></div></div><div class="bg-gray-800/50 rounded-lg p-4 border border-gray-700"><div class="flex justify-between items-center text-sm mb-2"><span class="text-gray-400">Coût Pro/mois</span><span class="text-red-400 font-semibold">-29€</span></div></div></div></div><!-- Results --><div class="bg-gradient-to-br from-primary/10 to-pink-500/10 rounded-xl p-6 border border-primary/20"><h3 class="text-lg font-semibold mb-6 flex items-center gap-2"><span class="text-secondary">💰</span>
-Votre Économie
-</h3><div class="space-y-4"><div><div class="flex justify-between items-center mb-2"><span class="text-gray-400 text-sm">Économie brute</span><span id="grossSavings" class="text-xl font-semibold text-white">1600€</span></div><div class="w-full bg-gray-800 rounded-full h-3 overflow-hidden"><div id="grossProgress" class="bg-gradient-to-r from-primary to-pink-500 h-full rounded-full progress-fill" style="width: 50%"></div></div></div><div><div class="flex justify-between items-center mb-2"><span class="text-gray-400 text-sm">Frais d'abonnement</span><span class="text-red-400 text-sm">-29€</span></div><div class="w-full bg-gray-800 rounded-full h-2 overflow-hidden"><div class="bg-red-500 h-full progress-fill" style="width: 5%"></div></div></div><hr class="border-gray-700 my-4"><div class="text-center"><div class="text-gray-400 text-sm mb-1">Gain Net Mensuel</div><div id="netGain" class="text-4xl font-bold gradient-text">1571€</div><div id="netGainPercent" class="text-green-400 text-sm mt-2 font-semibold">+98% ROI</div></div><div class="bg-green-500/20 border border-green-500/30 rounded-lg p-3 mt-4"><p class="text-xs text-green-300 flex items-start gap-2"><span class="text-lg">✓</span><span>ROI positif dès <strong class="text-white">1.5h sauvées</strong>/semaine !</span></p></div><div class="text-center pt-2"><button id="annualCalcBtn" class="text-primary hover:text-primaryLight text-sm font-semibold transition-colors">
-Voir le gain annuel →
-</button><div id="annualGain" class="text-2xl font-bold text-secondary mt-2 hidden">18 852€ / an</div></div></div></div></div></div></div></section><!-- Pricing Section --><section class="py-20 px-4 sm:px-6 lg:px-8 bg-gray-900/50" aria-labelledby="pricingTitle"><div class="max-w-6xl mx-auto"><div class="text-center mb-12 fade-in-section"><h2 id="pricingTitle" class="text-3xl sm:text-4xl font-bold mb-4">Des <span class="gradient-text">packs</span> pour tous</h2><p class="text-gray-400 text-lg">Choisissez le plan adapte a votre volume de webhooks</p></div><div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto"><div class="fade-in-section bg-gray-900 rounded-xl p-8 border border-gray-800 hover:border-primary transition-all duration-300 hover:scale-105"><h3 class="text-xl font-bold mb-2">Starter</h3><div class="text-4xl font-bold gradient-text mb-4">9&#128;</div><div class="text-gray-400 mb-6">/mois</div><ul class="space-y-3 mb-8 text-sm"><li class="flex items-center gap-2"><span class="text-green-400">&#10003;</span> 5 000 webhooks/mois</li><li class="flex items-center gap-2"><span class="text-green-400">&#10003;</span> Retry automatique</li><li class="flex items-center gap-2"><span class="text-green-400">&#10003;</span> Dead Letter Queue</li><li class="flex items-center gap-2"><span class="text-green-400">&#10003;</span> Dashboard temps reel</li></ul><a href="#cta" class="block text-center bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all font-semibold">Demarrer</a></div><div class="fade-in-section bg-gray-900 rounded-xl p-8 border border-primary ring-2 ring-primary/30 hover:scale-105 transition-all duration-300 relative"><div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full">Populaire</div><h3 class="text-xl font-bold mb-2">Pro</h3><div class="text-4xl font-bold gradient-text mb-4">29&#128;</div><div class="text-gray-400 mb-6">/mois</div><ul class="space-y-3 mb-8 text-sm"><li class="flex items-center gap-2"><span class="text-green-400">&#10003;</span> 50 000 webhooks/mois</li><li class="flex items-center gap-2"><span class="text-green-400">&#10003;</span> Retry avance (5 tentatives)</li><li class="flex items-center gap-2"><span class="text-green-400">&#10003;</span> HMAC signing SHA256</li><li class="flex items-center gap-2"><span class="text-green-400">&#10003;</span> Support prioritaire</li></ul><a href="#cta" class="block text-center bg-primary hover:bg-primaryDark text-white py-3 rounded-lg transition-all font-semibold">Essayer Pro</a></div><div class="fade-in-section bg-gray-900 rounded-xl p-8 border border-gray-800 hover:border-primary transition-all duration-300 hover:scale-105"><h3 class="text-xl font-bold mb-2">Enterprise</h3><div class="text-4xl font-bold gradient-text mb-4">Sur devis</div><div class="text-gray-400 mb-6">volume illimite</div><ul class="space-y-3 mb-8 text-sm"><li class="flex items-center gap-2"><span class="text-green-400">&#10003;</span> Webhooks illimites</li><li class="flex items-center gap-2"><span class="text-green-400">&#10003;</span> Preuves blockchain OTS</li><li class="flex items-center gap-2"><span class="text-green-400">&#10003;</span> Detection IA anomalies</li><li class="flex items-center gap-2"><span class="text-green-400">&#10003;</span> Contrat de licence THKL</li></ul><a href="https://zyqtron.fr/#contact" target="_blank" class="block text-center bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition-all font-semibold">Contactez-nous</a></div></div></div></section><!-- Dashboard OT Generator Section --><section class="py-20 px-4 sm:px-6 lg:px-8 bg-gray-900/50" aria-labelledby="apiKeyTitle"><div class="max-w-4xl mx-auto"><div class="text-center mb-12 fade-in-section"><h2 id="apiKeyTitle" class="text-3xl sm:text-4xl font-bold mb-4">
-Génère votre <span class="gradient-text">Clé API</span></h2><p class="text-gray-400 text-lg">Créez une clé de test instantanément, copiez-la en un clic</p></div><div class="max-w-2xl mx-auto"><div class="bg-gray-950 rounded-xl p-8 border border-gray-800 shadow-2xl animate-slide-up text-center"><div class="mb-6"><span class="text-5xl mb-4 block">🔑</span><h3 class="text-xl font-semibold mb-2">Format de clé</h3><p class="text-gray-400 text-sm">sk_test_xxxxxx (clé de test sécurisée)</p></div><button id="generateApiKeyBtn" class="w-full bg-gradient-to-r from-primary to-accent hover:from-primaryDark hover:to-pink-600 text-white py-4 rounded-lg transition-all duration-300 hover:scale-105 font-bold text-lg shadow-lg shadow-primary/50 mb-6"><span id="genBtnText">Générer ma clé de test</span><svg id="genBtnIcon" class="w-5 h-5 inline ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button><div id="apiKeyContainer" class="hidden"><div class="bg-gray-900 rounded-lg p-4 border border-primary/50 mb-4 animate-ninja-enter"><div class="text-xs text-gray-500 mb-1">Votre clé API générée :</div><div class="flex items-center justify-between gap-2"><span id="apiKeyValue" class="font-mono text-lg text-green-400">sk_test_🥷✝️...</span><button id="copyApiKeyBtn" class="bg-primary hover:bg-primaryDark text-white px-4 py-2 rounded-lg transition-all text-sm font-semibold flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-Copier
-</button></div></div><p class="text-xs text-gray-500">Cette clé est générée aléatoirement et stockée localement. <!-- CTA Section --><section id="cta" class="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-primary/20 via-dark to-pink-500/20" aria-labelledby="ctaTitle"><div class="max-w-4xl mx-auto text-center"><h2 id="ctaTitle" class="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 animate-slide-up">
-Prêt à accélérer votre <br><span class="gradient-text">automatisation</span> ?
-</h2><p class="text-xl text-gray-300 mb-8 animate-slide-up">
-Rejoignez les milliers de développeurs qui utilisent StideGuard.<br>
-Commencez gratuitement, passez au Pro quand vous voulez.
-</p><div class="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up"><button id="ctaBtn" onclick="window.open('https://zyqtron.fr/#contact','_blank')" class="bg-gradient-to-r from-primary to-pink-500 hover:from-primaryDark hover:to-pink-600 text-white text-lg px-10 py-4 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/50 font-bold">
-✨ Créer un compte gratuit
-</button><button id="docsBtn" class="bg-gray-800 hover:bg-gray-700 text-white text-lg px-10 py-4 rounded-lg transition-all duration-300 hover:scale-105 border border-gray-700 hover:border-primary">
-📚 Documentation
-</button></div><div class="mt-8 text-gray-400 animate-slide-up"><p class="flex flex-wrap items-center justify-center gap-2 text-sm"><span class="text-secondary">✓</span> Pas de carte de crédit requise
-<span class="text-secondary">✓</span> 14 jours d'essai Pro gratuit
-<span class="text-secondary">✓</span> Annulation à tout moment
-</p></div></div></section></main><!-- Footer --><footer class="bg-dark border-t border-gray-800 py-12 px-4 sm:px-6 lg:px-8" role="contentinfo"><div class="max-w-7xl mx-auto"><div class="grid md:grid-cols-4 gap-8 mb-8"><div><div class="flex items-center gap-2 mb-4"><span class="text-2xl">🥷</span><span class="text-xl font-bold gradient-text">Zyqtron</span></div><p class="text-gray-400 text-sm">
-La plateforme d'automatisation webhook la plus simple pour développeurs et équipes.
-</p></div><div><h4 class="font-semibold mb-4 text-gray-300 text-sm">Produit</h4><ul class="space-y-2 text-sm"><li><a href="#features" class="text-gray-400 hover:text-primary transition-colors">Fonctionnalités</a></li><li><a href="#demo" class="text-gray-400 hover:text-primary transition-colors">Démo</a></li><li><a href="#sandbox" class="text-gray-400 hover:text-primary transition-colors">SandBox</a></li><li><a href="#roi" class="text-gray-400 hover:text-primary transition-colors">ROI</a></li></ul></div><div><h4 class="font-semibold mb-4 text-gray-300 text-sm">Ressources</h4><ul class="space-y-2 text-sm"><li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Documentation</a></li><li><a href="#" class="text-gray-400 hover:text-primary transition-colors">API Reference</a></li><li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Cheatsheet</a></li></ul></div><div><h4 class="font-semibold mb-4 text-gray-300 text-sm">Légal</h4><ul class="space-y-2 text-sm"><li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Confidentialité</a></li><li><a href="#" class="text-gray-400 hover:text-primary transition-colors">CGU</a></li><li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Mentions légales</a></li></ul></div></div><div class="border-t border-gray-800 pt-8 text-center"><p class="text-gray-500 text-sm">© 2026 Zyqtron - StideGuard | <a href="https://zyqtron.fr" class="text-primary hover:underline">zyqtron.fr</a>. Tous droits réservés.</p></div></div></footer><!-- Dashboard Modal --><div id="dashboardModal" class="fixed inset-0 z-[100] hidden"><div class="absolute inset-0 bg-black/70 backdrop-blur-sm" data-close-modal></div><div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 max-w-4xl w-full mx-4"><div class="bg-dark rounded-xl shadow-2xl border border-gray-800 overflow-hidden animate-slide-up"><div class="bg-gray-900 px-6 py-4 flex items-center justify-between border-b border-gray-800"><div class="flex items-center gap-3"><span class="text-2xl">📊</span><h3 class="text-xl font-bold">Dashboard StideGuard</h3></div><button class="data-close-modal text-gray-400 hover:text-white transition-colors" data-close-modal><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div><div class="p-6"><!-- Dashboard Stats --><div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"><div class="bg-gray-900 rounded-lg p-4 border border-gray-800"><div class="text-gray-400 text-xs mb-1">THKL valides</div><div class="text-2xl font-bold text-primary">22</div></div><div class="bg-gray-900 rounded-lg p-4 border border-gray-800"><div class="text-gray-400 text-xs mb-1">Preuves OTS</div><div class="text-2xl font-bold text-secondary">529</div></div><div class="bg-gray-900 rounded-lg p-4 border border-gray-800"><div class="text-gray-400 text-xs mb-1">Quality gateès</div><div class="text-2xl font-bold text-green-400">100%</div></div><div class="bg-gray-900 rounded-lg p-4 border border-gray-800"><div class="text-gray-400 text-xs mb-1">FUSIONS</div><div class="text-2xl font-bold text-accent">4</div></div></div><!-- Chart Simulation --><div class="bg-gray-900 rounded-lg p-4 border border-gray-800 mb-4"><div class="text-sm text-gray-400 mb-3">Scores THKL (/30)</div><div class="flex items-end gap-2 h-32"><div class="flex-1 bg-primary/20 rounded-t hover:bg-primary transition-colors cursor-pointer relative group"><div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">27</div></div><div class="flex-1 bg-primary/30 rounded-t hover:bg-primary transition-colors cursor-pointer relative group"><div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">29</div></div><div class="flex-1 bg-primary/40 rounded-t hover:bg-primary transition-colors cursor-pointer relative group"><div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">30</div></div><div class="flex-1 bg-primary/50 rounded-t hover:bg-primary transition-colors cursor-pointer relative group"><div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">26</div></div><div class="flex-1 bg-primary/60 rounded-t hover:bg-primary transition-colors cursor-pointer relative group"><div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">28</div></div><div class="flex-1 bg-primary/50 rounded-t hover:bg-primary transition-colors cursor-pointer relative group"><div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">30</div></div><div class="flex-1 bg-primary/70 rounded-t hover:bg-primary transition-colors cursor-pointer relative group"><div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">25</div></div></div><div class="flex justify-between text-xs text-gray-500 mt-2"><span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span><span>Dim</span></div></div><!-- Recent Webhooks --><div class="bg-gray-900 rounded-lg p-4 border border-gray-800"><div class="flex items-center justify-between mb-3"><div class="text-sm font-semibold">Webhooks récents</div><button class="text-xs text-primary hover:text-primaryLight transition-colors">Voir tout</button></div><div class="space-y-2"><div class="flex items-center justify-between text-sm"><span class="text-gray-400">THKL-6A80B8</span><span class="text-green-400">✓ 87/100</span><span class="text-gray-500 text-xs">ILY</span></div><div class="flex items-center justify-between text-sm"><span class="text-gray-400">StideGuard</span><span class="text-green-400">✓ API</span><span class="text-gray-500 text-xs">5m</span></div><div class="flex items-center justify-between text-sm"><span class="text-gray-400">THKL-6A80B8</span><span class="text-green-400">✓ Docs</span><span class="text-gray-500 text-xs">12m</span></div><div class="flex items-center justify-between text-sm"><span class="text-gray-400">Zyqtron</span><span class="text-green-400">✓ THKL</span><span class="text-gray-500 text-xs">1h</span></div></div></div></div><div class="bg-gray-900 px-6 py-4 border-t border-gray-800 flex justify-end gap-3"><button class="close-modal bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-all text-sm">Fermer</button><button class="bg-primary hover:bg-primaryDark text-white px-4 py-2 rounded-lg transition-all text-sm">Ouvrir Dashboard</button></div></div></div></div><script>
-// ==================== INTERSECTION OBSERVER ====================
-document.addEventListener('DOMContentLoaded', () => {
-const observerOptions = {
-threshold: 0.1,
-rootMargin: '0px 0px -50px 0px'
-};
-
-const observer = new IntersectionObserver((entries) => {
-entries.forEach(entry => {
-if (entry.isIntersecting) {
-entry.target.classList.add('is-visible');
-}
-});
-}, observerOptions);
-
-document.querySelectorAll('.fade-in-section').forEach(section => {
-observer.observe(section);
-});
-});
-
-// ==================== TOAST NOTIFICATIONS ====================
-function showToast(message, icon = '✓') {
-const toast = document.getElementById('toast');
-const toastMessage = document.getElementById('toastMessage');
-const toastIcon = document.getElementById('toastIcon');
-
-toastMessage.textContent = message;
-toastIcon.textContent = icon;
-toast.classList.remove('translate-x-full');
-
-setTimeout(() => {
-toast.classList.add('translate-x-full');
-}, 3000);
-}
-
-// ==================== MOBILE MENU ====================
-const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-const mobileMenu = document.getElementById('mobileMenu');
-
-mobileMenuBtn.addEventListener('click', () => {
-const expanded = mobileMenuBtn.getAttribute('aria-expanded') === 'true';
-mobileMenuBtn.setAttribute('aria-expanded', !expanded);
-mobileMenu.classList.toggle('hidden');
-});
-
-// ==================== DASHBOARD MODAL ====================
-document.querySelectorAll('[data-close-modal], .close-modal').forEach(btn => {
-btn.addEventListener('click', () => {
-document.getElementById('dashboardModal').classList.add('hidden');
-});
-});
-
-document.getElementById('dashboardBtn').addEventListener('click', () => {
-document.getElementById('dashboardModal').classList.remove('hidden');
-});
-
-document.getElementById('mobileDashboardBtn').addEventListener('click', () => {
-document.getElementById('dashboardModal').classList.remove('hidden');
-});
-
-// ==================== TERMINAL DEMO ====================
-const sendTestBtn = document.getElementById('sendTestBtn');
-const clearTerminalBtn = document.getElementById('clearTerminalBtn');
-const terminalOutput = document.getElementById('terminalOutput');
-const successIndicator = document.getElementById('successIndicator');
-let isProcessing = false;
-
-const demoPayload = {
-event: "THKL-6A80B8",
-timestamp: new Date().toISOString(),
-webhook_id: "wh_" + Math.random().toString(36).substr(2, 9),
-source: "zyqtron-webhook-ninja"
-};
-
-sendTestBtn.addEventListener('click', async () => {
-if (isProcessing) return;
-isProcessing = true;
-sendTestBtn.disabled = true;
-sendTestBtn.innerHTML = '<svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Envoi...';
-
-const timestampLine = `> [${new Date().toISOString()}] Sending test webhook...`;
-terminalOutput.innerHTML += `\n<span class="text-gray-400">${timestampLine}</span>`;
-
-await new Promise(resolve => setTimeout(resolve, 800));
-
-const responseJson = JSON.stringify(demoPayload, null, 2);
-terminalOutput.innerHTML += `\n<div class="mt-2"><span class="text-yellow-400">Status:</span><span class="text-green-400">200 OK</span></div>`;
-terminalOutput.innerHTML += `<pre class="text-green-400 mt-1">${responseJson}</pre>`;
-terminalOutput.innerHTML += `<div class="mt-2 text-sm text-gray-400">Latence: ${Math.floor(Math.random() * 30 + 20)}ms</div>`;
-
-successIndicator.classList.remove('hidden');
-setTimeout(() => successIndicator.classList.add('hidden'), 2000);
-
-document.getElementById('cursor').scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-sendTestBtn.disabled = false;
-sendTestBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg> Envoyer Test';
-isProcessing = false;
-showToast('Webhook envoyé avec succès !', '✓');
-});
-
-clearTerminalBtn.addEventListener('click', () => {
-terminalOutput.innerHTML = '<span class="text-gray-500"># Terminal effacé</span>\n<span class="text-gray-500"># Prêt pour un nouveau test</span>\n';
-});
-
-// ==================== SANDBOX ====================
-const payloadEditor = document.getElementById('payloadEditor');
-const executeSandboxBtn = document.getElementById('executeSandboxBtn');
-const beautifyBtn = document.getElementById('beautifyBtn');
-const clearSandboxBtn = document.getElementById('clearSandboxBtn');
-const sandboxResult = document.getElementById('sandboxResult');
-const sandboxResponse = document.getElementById('sandboxResponse');
-let sandboxProcessing = false;
-
-beautifyBtn.addEventListener('click', () => {
-try {
-const parsed = JSON.parse(payloadEditor.value);
-payloadEditor.value = JSON.stringify(parsed, null, 2);
-showToast('JSON formaté !', '✨');
-} catch (e) {
-showToast('JSON invalide', '✗');
-}
-});
-
-clearSandboxBtn.addEventListener('click', () => {
-payloadEditor.value = '';
-sandboxResult.classList.add('hidden');
-showToast('Éditeur effacé', '♻');
-});
-
-executeSandboxBtn.addEventListener('click', async () => {
-if (sandboxProcessing) return;
-sandboxProcessing = true;
-executeSandboxBtn.disabled = true;
-executeSandboxBtn.innerHTML = '<svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Exécution...';
-
-let jsonPayload;
-try {
-jsonPayload = JSON.parse(payloadEditor.value);
-} catch (e) {
-sandboxResult.classList.remove('hidden');
-sandboxResponse.textContent = `Error: JSON invalide - ${e.message}`;
-sandboxResult.querySelector('div').className = 'text-red-400';
-showToast('JSON invalide', '✗');
-sandboxProcessing = false;
-executeSandboxBtn.disabled = false;
-executeSandboxBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Exécuter';
-return;
-}
-
-sandboxResult.classList.remove('hidden');
-sandboxResult.querySelector('div').className = 'text-gray-400 mb-2';
-sandboxResponse.textContent = 'Traitement...';
-
-await new Promise(resolve => setTimeout(resolve, 1000));
-
-const response = {
-status: 'success',
-status_code: 200,
-message: 'Webhook reçu et traité avec succès',
-webhook_id: `wh_${Math.random().toString(36).substr(2, 12)}`,
-timestamp: new Date().toISOString(),
-latency_ms: Math.floor(Math.random() * 50 + 15),
-processed_payload: jsonPayload
-};
-
-sandboxResponse.textContent = JSON.stringify(response, null, 2);
-sandboxResult.querySelector('div').className = 'text-green-400 mb-2';
-
-executeSandboxBtn.disabled = false;
-executeSandboxBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Exécuter';
-sandboxProcessing = false;
-showToast('Payload exécuté avec succès !', '✅');
-});
-
-// ==================== ROI CALCULATOR ====================
-const hourlyCostRange = document.getElementById('hourlyCostRange');
-const hoursSavedRange = document.getElementById('hoursSavedRange');
-const hourlyCostDisplay = document.getElementById('hourlyCostDisplay');
-const hoursSavedDisplay = document.getElementById('hoursSavedDisplay');
-const grossSavingsEl = document.getElementById('grossSavings');
-const netGainEl = document.getElementById('netGain');
-const netGainPercentEl = document.getElementById('netGainPercent');
-const grossProgress = document.getElementById('grossProgress');
-const annualBtn = document.getElementById('annualCalcBtn');
-const annualGainEl = document.getElementById('annualGain');
-
-const PRO_PRICE = 29;
-const WEEKS_PER_MONTH = 4;
-
-function calculateROI() {
-const hourlyCost = parseInt(hourlyCostRange.value);
-const hoursSaved = parseInt(hoursSavedRange.value);
-
-hourlyCostDisplay.textContent = `${hourlyCost}€`;
-hoursSavedDisplay.textContent = `${hoursSaved}h`;
-
-const grossSavings = hourlyCost * hoursSaved * WEEKS_PER_MONTH;
-const netGain = grossSavings - PRO_PRICE;
-const annualGain = netGain * 12;
-
-grossSavingsEl.textContent = `${grossSavings.toLocaleString('fr-FR')}€`;
-netGainEl.textContent = `${netGain.toLocaleString('fr-FR')}€`;
-
-// Progress bar (max at 8000€)
-const progressRatio = Math.min((grossSavings / 8000) * 100, 100);
-grossProgress.style.width = `${progressRatio}%`;
-
-// ROI percentage
-const roiPercent = grossSavings > 0 ? Math.round((netGain / grossSavings) * 100) : 0;
-const roiText = roiPercent >= 100 ? `+${roiPercent}% ROI` : `${roiPercent}% ROI`;
-netGainPercentEl.textContent = roiText;
-
-annualGainEl.textContent = `${(annualGain / 1000).toFixed(1)}K € / an`;
-}
-
-annualBtn.addEventListener('click', () => {
-annualGainEl.classList.toggle('hidden');
-annualBtn.textContent = annualGainEl.classList.contains('hidden') ? 'Voir le gain annuel →' : 'Masquer <−';
-});
-
-hourlyCostRange.addEventListener('input', calculateROI);
-hoursSavedRange.addEventListener('input', calculateROI);
-
-calculateROI();
-
-// ==================== API KEY GENERATOR ====================
-const generateApiKeyBtn = document.getElementById('generateApiKeyBtn');
-const apiKeyContainer = document.getElementById('apiKeyContainer');
-const apiKeyValue = document.getElementById('apiKeyValue');
-const copyApiKeyBtn = document.getElementById('copyApiKeyBtn');
-const genBtnText = document.getElementById('genBtnText');
-const genBtnIcon = document.getElementById('genBtnIcon');
-let keyGenerated = false;
-
-function generateNinjaKey() {
-const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012956789';
-let key = 'sk_test_';
-for (let i = 0; i < 20; i++) {
-key += chars.charAt(Math.floor(Math.random() * chars.length));
-}
-return key;
-}
-
-generateApiKeyBtn.addEventListener('click', () => {
-if (keyGenerated) {
-keyGenerated = false;
-apiKeyContainer.classList.add('hidden');
-genBtnText.textContent = 'Générer ma clé de test';
-genBtnIcon.style.display = 'inline';
-showToast('Clé générée', '🔑');
-return;
-}
-
-const key = generateNinjaKey();
-apiKeyValue.textContent = key;
-apiKeyContainer.classList.remove('hidden');
-
-genBtnText.textContent = 'Nouvelle clé !';
-genBtnIcon.style.display = 'none';
-keyGenerated = true;
-
-setTimeout(() => {
-showToast('Clé API générée !', '✨');
-}, 300);
-});
-
-copyApiKeyBtn.addEventListener('click', async () => {
-try {
-await navigator.clipboard.writeText(apiKeyValue.textContent);
-showToast('Clé copiée !', '📋');
-} catch (err) {
-showToast('Erreur de copie', '✗');
-}
-});
-
-// ==================== NAVIGATION BUTTONS ====================
-document.getElementById('navBtn').addEventListener('click', () => {
-document.getElementById('cta').scrollIntoView({ behavior: 'smooth' });
-});
-
-document.getElementById('mobileNavBtn').addEventListener('click', () => {
-document.getElementById('cta').scrollIntoView({ behavior: 'smooth' });
-});
-
-document.getElementById('heroCommencer').addEventListener('click', () => {
-document.getElementById('cta').scrollIntoView({ behavior: 'smooth' });
-});
-
-document.getElementById('docsBtn').addEventListener('click', () => {
-showToast('Documentation bientôt disponible !', '📚');
-});
-
-document.getElementById('ctaBtn').addEventListener('click', () => {
-showToast('Compte créé ! (Démo)', '✅');
-});
-
-// Handle Enter in payload editor (beautify)
-payloadEditor.addEventListener('keydown', (e) => {
-if (e.key === 'Tab') {
-e.preventDefault();
-const start = payloadEditor.selectionStart;
-const end = payloadEditor.selectionEnd;
-payloadEditor.value = payloadEditor.value.substring(0, start) + '  ' + payloadEditor.value.substring(end);
-payloadEditor.selectionStart = payloadEditor.selectionEnd = start + 2;
-}
-});
-
-// Close modal on Escape
-document.addEventListener('keydown', (e) => {
-if (e.key === 'Escape') {
-document.getElementById('dashboardModal').classList.add('hidden');
-}
-});
-
-// Initialize console log
-console.log('🥷 StideGuard by Zyqtron - Ready!');
-</script></body></html>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StideGuard - Détection d'Intrusion SCADA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>⚡</text></svg>">
+    <style>
+        :root {
+            --primary-red: #DC2626;
+            --dark-gray: #1F2937;
+            --medium-gray: #374151;
+            --light-gray: #F9FAFB;
+            --text-dark: #111827;
+            --text-light: #F9FAFB;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-gray);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--dark-gray);
+            color: var(--text-light);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            color: var(--text-light);
+        }
+
+        .logo::after {
+            content: "⚡";
+            margin-left: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 2rem;
+        }
+
+        nav ul li a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        nav ul li a:hover {
+            color: var(--primary-red);
+        }
+
+        /* Hero Section */
+        .hero {
+            background-color: var(--dark-gray);
+            color: var(--text-light);
+            padding: 8rem 0 4rem;
+            text-align: center;
+            background-image:
+                linear-gradient(rgba(31, 41, 55, 0.95), rgba(31, 41, 55, 0.95)),
+                repeating-linear-gradient(0deg, #374151, #374151 1px, transparent 1px, transparent 20px),
+                repeating-linear-gradient(90deg, #374151, #374151 1px, transparent 1px, transparent 20px);
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            color: #D1D5DB;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 4rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #DC2626, #B91C1C);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-light);
+            border: 1px solid var(--text-light);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-red);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #D1D5DB;
+        }
+
+        /* Features Section */
+        .section {
+            padding: 5rem 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--dark-gray);
+        }
+
+        .feature-card p {
+            color: #6B7280;
+        }
+
+        .feature-card .highlight {
+            color: var(--primary-red);
+            font-weight: 600;
+        }
+
+        /* THKL Section */
+        .thkl-section {
+            background-color: var(--medium-gray);
+            color: var(--text-light);
+        }
+
+        .thkl-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .thkl-header h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .thkl-score {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary-red);
+        }
+
+        .thkl-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .thkl-card {
+            background-color: var(--dark-gray);
+            padding: 2rem;
+            border-radius: 0.5rem;
+            text-align: center;
+        }
+
+        .thkl-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .metrics {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-red);
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #D1D5DB;
+        }
+
+        /* Pricing Section */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .pricing-card {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            position: relative;
+        }
+
+        .pricing-card.popular {
+            border: 2px solid var(--primary-red);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background-color: var(--primary-red);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .pricing-card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .price {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--dark-gray);
+            margin-bottom: 1rem;
+        }
+
+        .price span {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #6B7280;
+        }
+
+        .features-list {
+            list-style: none;
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .features-list li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .features-list li::before {
+            content: "✓";
+            color: var(--primary-red);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        /* Contact Section */
+        .contact-section {
+            background-color: var(--medium-gray);
+            color: var(--text-light);
+        }
+
+        .contact-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .contact-info h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .contact-info p {
+            margin-bottom: 2rem;
+            color: #D1D5DB;
+        }
+
+        .contact-form {
+            background-color: var(--dark-gray);
+            padding: 2rem;
+            border-radius: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid #374151;
+            background-color: var(--medium-gray);
+            color: var(--text-light);
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--dark-gray);
+            color: var(--text-light);
+            padding: 3rem 0 1rem;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: #D1D5DB;
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-red);
+        }
+
+        .copyright {
+            color: #9CA3AF;
+            font-size: 0.9rem;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav ul {
+                margin-top: 1rem;
+            }
+
+            nav ul li {
+                margin: 0 0.5rem;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .stats {
+                gap: 1.5rem;
+            }
+
+            .contact-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <a href="#" class="logo">StideGuard</a>
+            <nav>
+                <ul>
+                    <li><a href="#fonctionnalites">Fonctionnalités</a></li>
+                    <li><a href="#thkl">THKL</a></li>
+                    <li><a href="#packs">Packs</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1 class="animate-fade-in-up">Détection d'Intrusion SCADA</h1>
+                <p class="animate-fade-in-up" style="animation-delay: 0.2s;">Protection temps réel des infrastructures industrielles Modbus et DNP3</p>
+                <div class="cta-buttons animate-fade-in-up" style="animation-delay: 0.4s;">
+                    <a href="https://zyqtron.fr/#contact" class="btn btn-primary">Demander une démo</a>
+                    <a href="https://zyqtron.fr/catalogue.html" target="_blank" class="btn btn-secondary">Documentation technique</a>
+                </div>
+                <div class="stats animate-fade-in-up" style="animation-delay: 0.6s;">
+                    <div class="stat-item">
+                        <div class="stat-number">50ms</div>
+                        <div class="stat-label">détection</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">3.4M/s</div>
+                        <div class="stat-label">messages traités</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">Modbus/DNP3</div>
+                        <div class="stat-label">protocoles supportés</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">surveillance</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="fonctionnalites" class="section">
+            <div class="container">
+                <h2 class="section-title">Fonctionnalités Clés</h2>
+                <div class="features-grid">
+                    <div class="feature-card animate-fade-in-up">
+                        <h3>Détection SCADA temps réel</h3>
+                        <p>Algorithme <span class="highlight">Stide</span> avec sliding window pour une détection instantanée des anomalies dans les flux industriels.</p>
+                    </div>
+                    <div class="feature-card animate-fade-in-up" style="animation-delay: 0.1s;">
+                        <h3>Faux positifs &lt;0.3%</h3>
+                        <p>Modèle entraîné sur <span class="highlight">données réelles</span> de sites industriels pour une précision optimale.</p>
+                    </div>
+                    <div class="feature-card animate-fade-in-up" style="animation-delay: 0.2s;">
+                        <h3>Zero Trust OT</h3>
+                        <p>Isolation du trafic critique avec segmentation réseau et validation systématique des commandes.</p>
+                    </div>
+                    <div class="feature-card animate-fade-in-up" style="animation-delay: 0.3s;">
+                        <h3>MITRE ATT&CK Mapping</h3>
+                        <p>Couverture des techniques <span class="highlight">T0843, T0831, T0878, T0885</span> avec corrélation des alertes.</p>
+                    </div>
+                    <div class="feature-card animate-fade-in-up" style="animation-delay: 0.4s;">
+                        <h3>Alertes configurables</h3>
+                        <p>Seuils personnalisables par type d'anomalie et intégration avec les SIEM existants.</p>
+                    </div>
+                    <div class="feature-card animate-fade-in-up" style="animation-delay: 0.5s;">
+                        <h3>Dashboard temps réel</h3>
+                        <p>Visualisation des flux SCADA avec géolocalisation des équipements et historique des incidents.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="thkl" class="section thkl-section">
+            <div class="container">
+                <div class="thkl-header">
+                    <h2>Propulsé par THKL-6A80B8</h2>
+                    <div class="thkl-score">87/100</div>
+                    <p>Brevet US20060034305A1 (Honeywell) | 529 preuves blockchain</p>
+                </div>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-value">Precision 15.2%</div>
+                        <div class="metric-label">Précision</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">Recall 86.7%</div>
+                        <div class="metric-label">Rappel</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">F1 25.9%</div>
+                        <div class="metric-label">Score F1</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">Accuracy 91.8%</div>
+                        <div class="metric-label">Exactitude</div>
+                    </div>
+                </div>
+                <div class="thkl-grid">
+                    <div class="thkl-card animate-fade-in-up">
+                        <h3>Sécurité renforcée</h3>
+                        <p>Architecture conçue pour les environnements industriels avec isolation des flux critiques et chiffrement des données.</p>
+                    </div>
+                    <div class="thkl-card animate-fade-in-up" style="animation-delay: 0.1s;">
+                        <h3>Preuves Blockchain</h3>
+                        <p>529 preuves d'intégrité enregistrées sur chaîne de blocs pour une traçabilité infalsifiable des alertes.</p>
+                    </div>
+                    <div class="thkl-card animate-fade-in-up" style="animation-delay: 0.2s;">
+                        <h3>IA de détection</h3>
+                        <p>Modèle hybride combinant règles métiers et apprentissage automatique pour une détection adaptative.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="packs" class="section">
+            <div class="container">
+                <h2 class="section-title">Packs StideGuard</h2>
+                <div class="pricing-grid">
+                    <div class="pricing-card animate-fade-in-up">
+                        <h3>Starter</h3>
+                        <div class="price">9€<span>/mois</span></div>
+                        <ul class="features-list">
+                            <li>5000 requêtes/jour</li>
+                            <li>Alertes email</li>
+                            <li>Dashboard temps réel</li>
+                            <li>Support standard</li>
+                        </ul>
+                        <a href="https://zyqtron.fr/#contact" class="btn btn-primary" style="width: 100%; display: block; text-align: center;">Choisir ce pack</a>
+                    </div>
+                    <div class="pricing-card popular animate-fade-in-up" style="animation-delay: 0.1s;">
+                        <div class="popular-badge">Le plus populaire</div>
+                        <h3>Pro</h3>
+                        <div class="price">29€<span>/mois</span></div>
+                        <ul class="features-list">
+                            <li>50000 requêtes/jour</li>
+                            <li>Alertes SMS</li>
+                            <li>API complète</li>
+                            <li>Support prioritaire</li>
+                            <li>Intégration SIEM</li>
+                        </ul>
+                        <a href="https://zyqtron.fr/#contact" class="btn btn-primary" style="width: 100%; display: block; text-align: center;">Choisir ce pack</a>
+                    </div>
+                    <div class="pricing-card animate-fade-in-up" style="animation-delay: 0.2s;">
+                        <h3>Enterprise</h3>
+                        <div class="price">Sur devis</div>
+                        <ul class="features-list">
+                            <li>Requêtes illimitées</li>
+                            <li>Déploiement on-premise</li>
+                            <li>SLA 99.9%</li>
+                            <li>Support dédié 24/7</li>
+                            <li>Formation personnalisée</li>
+                            <li>Intégration sur mesure</li>
+                        </ul>
+                        <a href="https://zyqtron.fr/#contact" class="btn btn-primary" style="width: 100%; display: block; text-align: center;">Nous contacter</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="section contact-section">
+            <div class="container">
+                <div class="contact-container">
+                    <div class="contact-info">
+                        <h2>Contactez-nous</h2>
+                        <p>Pour toute question sur nos solutions de détection d'intrusion SCADA, n'hésitez pas à nous contacter.</p>
+                        <p>Email: <a href="mailto:zyqtron.vault@gmail.com" style="color: var(--primary-red);">zyqtron.vault@gmail.com</a></p>
+                    </div>
+                    <div class="contact-form">
+                        <form>
+                            <div class="form-group">
+                                <label for="name">Nom</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="message">Message</label>
+                                <textarea id="message" name="message" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">Envoyer</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-links">
+                <a href="https://zyqtron.fr">© 2026 Zyqtron - StideGuard</a>
+                <a href="https://zyqtron.fr">zyqtron.fr</a>
+                <a href="https://zyqtron.fr/mentions-legales.html">Mentions légales</a>
+                <a href="https://zyqtron.fr/cgv.html">CGV</a>
+                <a href="https://zyqtron.fr/confidentialite.html">Politique de confidentialité</a>
+            </div>
+            <div class="copyright">
+                <p>Toutes les marques citées sont la propriété de leurs détenteurs respectifs.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Animation on scroll
+        const animateOnScroll = () => {
+            const elements = document.querySelectorAll('.animate-fade-in-up');
+            elements.forEach(element => {
+                const elementPosition = element.getBoundingClientRect().top;
+                const windowHeight = window.innerHeight;
+                if (elementPosition < windowHeight - 100) {
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }
+            });
+        };
+
+        window.addEventListener('load', animateOnScroll);
+        window.addEventListener('scroll', animateOnScroll);
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId !== '#') {
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
